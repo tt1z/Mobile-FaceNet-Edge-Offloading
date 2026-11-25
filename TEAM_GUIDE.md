@@ -121,10 +121,10 @@ App 打开并加载人脸底库后，屏幕顶部会实时显示 **性能监控 
 所有测试组录制完成后，把手机连上电脑执行：
 
 ```powershell
-# 1. 一键拉取手机里所有录制好的 CSV 到电脑 perf_logs 目录
-adb pull /sdcard/Android/data/com.ml.quaterion.facenetdetection/files/Documents/. d:\ASSDK\project\perf_logs\
+# 1. 一键拉取手机里所有录制好的 CSV 到独立目录（推荐，避免和仓库已有样本混在一起）
+adb pull /sdcard/Android/data/com.ml.quaterion.facenetdetection/files/Documents/. d:\ASSDK\project\perf_logs_mine\
 
-# 2. 若实验文件与 analyze_midterm.py 中预设文件名一致（或更新映射后），运行分析脚本生成图表
-cloud-server\.venv\Scripts\python.exe analyze_midterm.py
+# 2. 自动识别目录内全部 CSV 并生成属于你自己的高清图表与统计表
+cloud-server\.venv\Scripts\python.exe analyze_midterm.py --input-dir perf_logs_mine --output-dir results_mine
 ```
-运行后即可在 `midterm_report_results/` 目录查看生成的 **300 DPI 高清对比图** 与 **Markdown 统计汇总表**。
+> **说明**：`analyze_midterm.py` 会自动根据 CSV 内部记录的 `mode / backend / net_profile / jpeg_q / payload_kb` 对文件自动归类（同一条件多次录制时默认取最新一份），**无需手动改文件名**，也不必复制仓库原有的 CSV。运行后即可在 `results_mine/` 目录查看生成的高清对比图与 `midterm_summary.md` 统计汇总表。
