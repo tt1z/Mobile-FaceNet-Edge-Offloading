@@ -46,31 +46,60 @@ class FaceNetModel( context : Context ,
     // Output embedding size
     val embeddingDim = model.outputDims
 
+    val isGpuEnabled: Boolean
+    val activeBackend: String
+
     private var interpreter : Interpreter
+    private var gpuDelegate : GpuDelegate? = null
     private val imageTensorProcessor = ImageProcessor.Builder()
         .add( ResizeOp( imgSize , imgSize , ResizeOp.ResizeMethod.BILINEAR ) )
         .add( StandardizeOp() )
         .build()
 
     init {
+        var gpuActivated = false
         // Initialize TFLiteInterpreter
         val interpreterOptions = Interpreter.Options().apply {
-            // Add the GPU Delegate if supported.
+            // Add the GPU Delegate if requested and supported.
             // See -> https://www.tensorflow.org/lite/performance/gpu#android
             if ( useGpu ) {
-                if ( CompatibilityList().isDelegateSupportedOnThisDevice ) {
-                    addDelegate( GpuDelegate( CompatibilityList().bestOptionsForThisDevice ))
+                val compatList = CompatibilityList()
+                if ( compatList.isDelegateSupportedOnThisDevice ) {
+                    val delegate = GpuDelegate( compatList.bestOptionsForThisDevice )
+                    gpuDelegate = delegate
+                    addDelegate( delegate )
+                    gpuActivated = true
+                } else {
+                    numThreads = 4
+                    setUseXNNPACK( useXNNPack )
                 }
             }
             else {
-                // Number of threads for computation
+                // Pure 4-thread CPU (+ optional XNNPACK), explicitly disabling NNAPI
+                // so CPU vs GPU benchmarks are not confounded by NPU delegation.
                 numThreads = 4
+                setUseXNNPACK( useXNNPack )
+                useNNAPI = false
             }
-            setUseXNNPACK( useXNNPack )
-            useNNAPI = true
         }
+        isGpuEnabled = gpuActivated
+        activeBackend = if ( gpuActivated ) "GPU" else "CPU-4T"
         interpreter = Interpreter(FileUtil.loadMappedFile(context, model.assetsFilename ) , interpreterOptions )
-        Logger.log("Using ${model.name} model.")
+        Logger.log("Using ${model.name} model ($activeBackend).")
+    }
+
+    fun close() {
+        try {
+            interpreter.close()
+        } catch ( e : Exception ) {
+            Log.w( "FaceNetModel" , "Error closing interpreter: ${e.message}" )
+        }
+        try {
+            gpuDelegate?.close()
+            gpuDelegate = null
+        } catch ( e : Exception ) {
+            Log.w( "FaceNetModel" , "Error closing GpuDelegate: ${e.message}" )
+        }
     }
 
 

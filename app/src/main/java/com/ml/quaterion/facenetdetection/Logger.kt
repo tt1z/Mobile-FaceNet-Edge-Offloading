@@ -19,12 +19,21 @@ class Logger {
 
     companion object {
 
+        private const val MAX_LOG_LINES = 50
+
         fun log( message : String ) {
-            MainActivity.setMessage(  MainActivity.logTextView.text.toString() + "\n" + ">> $message" )
-            // To scroll to the last message
-            // See this SO answer -> https://stackoverflow.com/a/37806544/10878733
-            while ( MainActivity.logTextView.canScrollVertically(1) ) {
-                MainActivity.logTextView.scrollBy(0, 10)
+            val tv = MainActivity.logTextView
+            tv.post {
+                val lines = (tv.text.toString() + "\n>> $message").lines()
+                val trimmed = if (lines.size > MAX_LOG_LINES) {
+                    lines.takeLast(MAX_LOG_LINES).joinToString("\n")
+                } else {
+                    lines.joinToString("\n")
+                }
+                MainActivity.setMessage( trimmed )
+                while ( tv.canScrollVertically(1) ) {
+                    tv.scrollBy(0, 10)
+                }
             }
         }
 

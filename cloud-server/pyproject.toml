@@ -1,0 +1,25 @@
+[project]
+name = "facenet-edge-server"
+version = "0.2.0"
+description = "PC edge inference microservice for Mobile FaceNet computation partitioning (Part B/C)"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "python-multipart>=0.0.12",
+    "httpx>=0.27.0",
+    "pillow>=10.4.0",
+    "numpy>=1.26.0,<2.1.0",
+    "opencv-python-headless>=4.10.0",
+    "mediapipe>=0.10.14,<0.10.22",
+    "tensorflow-cpu>=2.17.0,<2.19.0",
+]
+
+[tool.uv]
+required-environments = [
+    "sys_platform == 'win32' and platform_machine == 'AMD64'",
+]
+
+[[tool.uv.index]]
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+default = true

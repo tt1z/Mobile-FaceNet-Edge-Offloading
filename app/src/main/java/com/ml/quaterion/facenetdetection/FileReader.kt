@@ -46,6 +46,10 @@ class FileReader( private var faceNetModel: FaceNetModel ) {
 
 
 
+    fun updateModel( newModel : FaceNetModel ) {
+        faceNetModel = newModel
+    }
+
     // Given the Bitmaps, extract face embeddings from then and deliver the processed embedding to ProcessCallback.
     fun run( data : ArrayList<Pair<String,Bitmap>> , callback: ProcessCallback ) {
         numImages = data.size

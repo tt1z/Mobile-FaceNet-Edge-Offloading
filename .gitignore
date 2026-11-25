@@ -15,3 +15,11 @@
 /captures
 .externalNativeBuild
 .cxx
+app/build/
+
+# PC Edge Server (uv venv & Python caches)
+cloud-server/.venv/
+cloud-server/__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
